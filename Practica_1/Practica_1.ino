@@ -16,6 +16,7 @@ void setup() {
   SerialBT.begin("Esp32"); //Iniciara la Escucha BT con el Nombre que le queramos Asignar
   Serial.println("Inicializando Dispositivo!");
   pinMode(Pin, OUTPUT); //Declaramos el Pin de Salida
+  digitalWrite(Pin,HIGH);
 }
 
 void loop() {

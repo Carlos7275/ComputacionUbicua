@@ -3,86 +3,99 @@
 
 const char* ssid     = "Fam Sandoval Lizarraga";
 const char* password = "Sandovallizarraga7275";
-
+//const char* ssid     = "ccwifi";
+//const char* password = "HP542003axsc";
+const int Pin = 2;
+String outputState = "off";
 WiFiServer server(80);
-
 void setup()
 {
-    Serial.begin(115200);
-    pinMode(2, OUTPUT);      // set the LED pin mode
+  Serial.begin(115200);
+  pinMode(Pin, OUTPUT);      // set the LED pin mode
+  delay(10);
 
-    delay(10);
+  Serial.print("Conectando a  ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("Conectado al Wifi.");
+  Serial.println("Direccion IP: ");
+  Serial.println(WiFi.localIP());
 
-    // We start by connecting to a WiFi network
-
-    Serial.println();
-    Serial.println();
-    Serial.print("Connecting to ");
-    Serial.println(ssid);
-
-    WiFi.begin(ssid, password);
-
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-    }
-
-    Serial.println("");
-    Serial.println("WiFi connected.");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
-    
-    server.begin();
+  server.begin();
 
 }
 
-void loop(){
- WiFiClient client = server.available();   // listen for incoming clients
+void loop() {
+  WiFiClient client = server.available();
 
-  if (client) {                             // if you get a client,
-    Serial.println("New Client.");           // print a message out the serial port
-    String currentLine = "";                // make a String to hold incoming data from the client
-    while (client.connected()) {            // loop while the client's connected
-      if (client.available()) {             // if there's bytes to read from the client,
-        char c = client.read();             // read a byte, then
-        Serial.write(c);                    // print it out the serial monitor
-        if (c == '\n') {                    // if the byte is a newline character
+  if (client) {
+    Serial.println("Nuevo Cliente.");
+    String currentLine = "";
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+        Serial.write(c);
+        if (c == '\n') {
 
-          // if the current line is blank, you got two newline characters in a row.
-          // that's the end of the client HTTP request, so send a response:
           if (currentLine.length() == 0) {
-            // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
-            // and a content-type so the client knows what's coming, then a blank line:
             client.println("HTTP/1.1 200 OK");
             client.println("Content-type:text/html");
             client.println();
+            client.println(R"====(<style> @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');*{font-family: "Poppins",sans-serif;}     .btn{
+            border-radius: 20px;
+            width: 40%;
+        
+            font-size: 22px;
+            font-weight: 400;
+            border: none;
 
-            // the content of the HTTP response follows the header:
-            client.print("Click <a href=\"/H\">here</a> to turn the LED on pin 2 on.<br>");
-            client.print("Click <a href=\"/L\">here</a> to turn the LED on pin 2 off.<br>");
+            }
 
-            // The HTTP response ends with another blank line:
-            client.println();
-            // break out of the while loop:
+            .btn:hover{
+                background: gray;
+                color: white;
+                cursor:pointer;
+            }
+            .green{
+                color: white;
+                background-color: rgb(4, 201, 109);
+
+            }
+            .red{
+                color: white;
+                background-color: red;
+
+            }</style>)====");
+            client.println("<center><h1>Bienvenido al Servidor ESP-32 CARLITOS</h1>");
+            if (outputState == "off")
+              client.print("<a href=\"/H\"><button class=\"  btn green  \">Encender</button></a> <br>");
+            else
+              client.print("<a href=\"/L\"><button class=\" / btn red / \">Apagar</button></a> <br>");
+
+            client.println("</center>");
             break;
-          } else {    // if you got a newline, then clear currentLine:
+          } else {
             currentLine = "";
           }
-        } else if (c != '\r') {  // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
+        } else if (c != '\r') {
+          currentLine += c;
         }
-
-        // Check to see if the client request was "GET /H" or "GET /L":
         if (currentLine.endsWith("GET /H")) {
-          digitalWrite(2, HIGH);               // GET /H turns the LED on
+          outputState = "on";
+          digitalWrite(Pin, HIGH);               // GET /H turns the LED on
         }
         if (currentLine.endsWith("GET /L")) {
-          digitalWrite(2, LOW);                // GET /L turns the LED off
+          outputState = "off";
+          digitalWrite(Pin, LOW);                // GET /L turns the LED off
         }
       }
     }
     // close the connection:
     client.stop();
-    Serial.println("Client Disconnected.");
+    Serial.println("Cliente Desconectado.");
   }
 }
