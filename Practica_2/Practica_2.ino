@@ -5,7 +5,7 @@ const char* ssid     = "Fam Sandoval Lizarraga";
 const char* password = "Sandovallizarraga7275";
 //const char* ssid     = "ccwifi";
 //const char* password = "HP542003axsc";
-const int Pin = 2;
+ int Pin = 0;
 String outputState = "off";
 WiFiServer server(80);
 void setup()
@@ -18,7 +18,9 @@ void setup()
   Serial.println(ssid);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
+    digitalWrite(2,1);
     delay(500);
+      digitalWrite(2,0);
     Serial.print(".");
   }
   Serial.println("Conectado al Wifi.");
